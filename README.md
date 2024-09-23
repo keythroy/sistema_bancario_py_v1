@@ -1,6 +1,10 @@
-Sistema bancario simples em python, desafio integrante do bootcamp Dio/NTT DATA - Engenharia de dados com Python
+Desafio integrante do bootcamp Dio/NTT DATA - Engenharia de dados com Python<br>
+Sistema bancario simples em python
 
     - implementando funções
     - adicionando cadastro de usuário e conta corrente
 
-> $ python main.py
+> $ git clone https://github.com/keythroy/sistema_bancario_py_v1.git<br>
+> $ cd sistema_bancario_py_v1/<br>
+> $ git checkout v2<br>
+> $ python main.py<br>
