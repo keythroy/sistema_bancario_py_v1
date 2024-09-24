@@ -1,5 +1,5 @@
 Desafio integrante do bootcamp Dio/NTT DATA - Engenharia de dados com Python<br>
-Sistema bancario simples em python
+Sistema bancario em python
 <br>
 >- implementando classes e interface
 
