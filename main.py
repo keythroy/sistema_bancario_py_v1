@@ -1,8 +1,6 @@
 import textwrap
-from abc import ABC, abstractclassmethod, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from datetime import datetime
-
-
 
 class Cliente:
     def __init__(self, endereco):
@@ -21,6 +19,28 @@ class PessoaFisica(Cliente):
         self.nome = nome
         self.cpf = cpf
         self.data_nascimento = data_nascimento
+
+class ContasIterador:
+    def __init__(self, contas):
+        self.contas = contas
+        self._indice = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            conta = self.contas[self._indice]
+            return f"""\
+            Agência:\t{conta.agencia}
+            Número:\t\t{conta.numero}
+            Cliente:\t{conta.cliente.nome}
+            Saldo:\t\tR$ {conta.saldo:.2f}
+            """
+        except IndexError:
+            raise StopIteration
+        finally:
+            self._indice += 1
 
 class Conta:
     def __init__(self, numero, cliente):
@@ -119,6 +139,11 @@ class Historico:
             "tipo": transacao.__class__.__name__,
             "valor": transacao.valor
         })
+    
+    def gerar_relatorio(self, tipo_transacao=None):
+        for transacao in self._transacoes:
+            if tipo_transacao is None or transacao['tipo'].lower() == tipo_transacao.lower():
+                yield transacao
 
 class Transacao(ABC):
     @property
@@ -175,7 +200,14 @@ class Saque(Transacao):
             print("\n!!! Erro ao realizar saque")
 
         print(msg)
-        
+
+def log_transacao(func):
+    def envelope(*args, **kwargs):
+        resultado = func(*args, **kwargs)
+        print(f"{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}: {func.__name__.upper()}")
+        return resultado
+    return envelope
+
 def menu():
     menu = """
         ----------------- MENU ----------------------
@@ -192,6 +224,7 @@ def menu():
     
     return input(textwrap.dedent(menu))
 
+@log_transacao
 def criar_cliente(clientes):
     cpf = input('Digite o CPF: ')
     cliente = filtrar_cliente_por_cpf(clientes, cpf)
@@ -213,6 +246,7 @@ def filtrar_cliente_por_cpf(clientes, cpf):
     clientes = [cliente for cliente in clientes if cliente.cpf == cpf]
     return clientes[0] if clientes else None
 
+@log_transacao
 def criar_conta(numero, clientes, contas):
     cpf = input('Digite o CPF: ')
     cliente = filtrar_cliente_por_cpf(clientes, cpf)
@@ -228,14 +262,10 @@ def criar_conta(numero, clientes, contas):
     print(f'\nConta criada com sucesso. Número da conta: {conta.numero}')
 
 def listar_contas(contas):
-    if not contas:
-        print('\n!!! Nenhuma conta encontrada !!!')
-        return
-
-    for conta in contas:
+    for conta in ContasIterador(contas):
+        print('---------------------------------------------')
         print(textwrap.dedent(str(conta)))
-
-    
+  
 def get_conta_cliente(cliente):
     if not cliente.contas:
         print('\n!!! Cliente não possui conta !!!')
@@ -250,6 +280,7 @@ def get_conta_cliente(cliente):
     
     return conta[0]
 
+@log_transacao
 def transacao(clientes, tipo):
     cpf = input('Digite o CPF: ')
     cliente = filtrar_cliente_por_cpf(clientes, cpf)
@@ -276,6 +307,7 @@ def transacao(clientes, tipo):
     
     cliente.realizar_transacao(conta, transacao)
 
+@log_transacao
 def extrato(clientes):
     cpf = input('Digite o CPF: ')
     cliente = filtrar_cliente_por_cpf(clientes, cpf)
@@ -290,14 +322,16 @@ def extrato(clientes):
         return
     
     print("\n---------------- EXTRATO --------------------")
-    transacoes = conta.historico.transacoes
+    extrato = ""
+    tem_transacoes = False
+    for transacao in conta.historico.gerar_relatorio():
+        tem_transacoes = True
+        extrato += f"{transacao['data']} - {transacao['tipo']} - R$ {transacao['valor']:.2f}\n"
     
-    if not transacoes:
+    if not tem_transacoes:
         print('\n!!! Nenhuma transação realizada !!!')
-    else:
-        for transacao in transacoes:
-            print(f"{transacao['data']} - {transacao['tipo']} - {transacao['valor']}")
-
+    
+    print(extrato)
     print("\n---------------------------------------------")
     print(f"Saldo: R$ {conta.saldo:.2f}") 
     print("\n---------------------------------------------")
