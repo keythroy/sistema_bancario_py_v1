@@ -241,8 +241,14 @@ def get_conta_cliente(cliente):
         print('\n!!! Cliente não possui conta !!!')
         return 
     
-    # FIXME: Implementar lógica para selecionar a conta
-    return cliente.contas[0]
+    for conta in cliente.contas:
+        print(f"Conta: {conta.numero}")
+
+    numero_conta = input('Digite o número da conta: ')
+    
+    conta = [conta for conta in cliente.contas if conta.numero == int(numero_conta)]
+    
+    return conta[0]
 
 def transacao(clientes, tipo):
     cpf = input('Digite o CPF: ')
