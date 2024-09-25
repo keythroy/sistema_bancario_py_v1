@@ -244,7 +244,7 @@ def get_conta_cliente(cliente):
     # FIXME: Implementar lógica para selecionar a conta
     return cliente.contas[0]
 
-def depositar(clientes):
+def transacao(clientes, tipo):
     cpf = input('Digite o CPF: ')
     cliente = filtrar_cliente_por_cpf(clientes, cpf)
 
@@ -252,27 +252,16 @@ def depositar(clientes):
         print('\n!!! Cliente não encontrado !!!')
         return
 
-    valor = float(input('Digite o valor do depósito: '))
-    transacao = Deposito(valor)
-
-    conta = get_conta_cliente(cliente)
-    if not conta:
-        print('\n!!! Conta não encontrada !!!')
+    if tipo == 'd':
+        valor = float(input('Digite o valor do depósito: '))
+        transacao = Deposito(valor)
+    elif tipo == 's':
+        valor = float(input('Digite o valor do saque: '))
+        transacao = Saque(valor)
+    else:
+        print('\n!!! Transação inválida !!!')
         return
-    
-    cliente.realizar_transacao(conta, transacao)
-
-# FIXME: depositar e sacar são praticamente iguais, podemos criar uma função genérica
-def sacar(clientes):
-    cpf = input('Digite o CPF: ')
-    cliente = filtrar_cliente_por_cpf(clientes, cpf)
-
-    if not cliente:
-        print('\n!!! Cliente não encontrado !!!')
-        return
-
-    valor = float(input('Digite o valor do saque: '))
-    transacao = Saque(valor)
+        
 
     conta = get_conta_cliente(cliente)
     if not conta:
@@ -315,10 +304,10 @@ def main():
         opcao = menu()
 
         if opcao == 'd':
-            depositar(clientes)
+            transacao(clientes,'d')
 
         elif opcao == 's':
-            sacar(clientes)
+            transacao(clientes,'s')
             
         elif opcao == 'e':
             extrato(clientes)
